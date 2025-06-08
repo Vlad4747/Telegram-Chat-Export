@@ -1,0 +1,512 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Chat</title>
+    <style>
+        @font-face {
+            font-family: 'Roboto-Regular-Emoji';
+            src: url('Roboto-Regular-Emoji.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            background-image: url('wp1.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        a {
+            color: #00B7EB;
+            text-decoration: underline;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            background-color: #212121;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            border-bottom: 1px solid #333;
+        }
+        .chat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            scrollbar-width: none;
+        }
+        .messages::-webkit-scrollbar {
+            display: none;
+        }
+        .message {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 10px;
+            line-height: 1.4;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .message-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .message-info {
+            font-size: 12px;
+            color: #aaaaaa;
+            text-align: right;
+            margin-top: 5px;
+            margin-left: 8px;
+        }
+        .message-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .message-time {
+            margin-left: 8px;
+        }
+        .sent {
+            background-color: #005c4b;
+            margin-left: auto;
+            margin-right: 10px;
+        }
+        .received {
+            background-color: #2a2a2a;
+            margin-right: auto;
+            margin-left: 10px;
+        }
+        .message-time {
+            font-size: 12px;
+            color: #aaaaaa;
+            text-align: right;
+            margin-top: 5px;
+            padding: 0 10px;
+        }
+        .reply-preview {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid #4a90e2;
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #cccccc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .forwarded-from {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid #4a90e2;
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #cccccc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .message-photo {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .inline-keyboard {
+            display: grid;
+            gap: 5px;
+            margin-top: 10px;
+            padding: 0 1px;
+        }
+        .inline-keyboard > div {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+            gap: 5px;
+        }
+        .inline-button {
+            background-color: #3f3f3f;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .reply-keyboard {
+            display: grid;
+            gap: 5px;
+            padding: 10px;
+            background-color: #212121;
+            border-top: 1px solid #333;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .reply-keyboard > div {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+            gap: 5px;
+        }
+        .reply-button {
+            background-color: #3f3f3f;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #212121;
+            border-top: 1px solid #333;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .centered-text {
+            display: flex;
+            justify-content: center;
+        }
+        .input-container > div {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .emoji-icon {
+            flex: 0 0 auto;
+            font-family: 'Roboto-Regular-Emoji';
+        }
+        .message-placeholder {
+            flex: 1;
+            background-color: #2a2a2a;
+            padding: 8px 12px;
+            border-radius: 20px;
+            text-align: left;
+            color: #aaaaaa;
+        }
+        .right-icons {
+            flex: 0 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+        .right-icons span {
+            font-family: 'Roboto-Regular-Emoji';
+        }
+        .reactions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .reaction {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 2px 5px;
+            margin: 0 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        
+            <div class="chat-header">
+                <span>←</span>
+                <img src="downloads/chat_icon.jpg" class="chat-icon" onerror="this.style.display='none'">
+                <span>Square Code</span>
+                
+            </div>
+        
+        <div class="messages">
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">Этом мой модуль</div>
+<span class="message-info">12:22</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">from pyg4i import g4i<br><br>g4i.g4i.model = g4i.g4i.models.deepseek_r1</div>
+<span class="message-info">12:41</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    <div class="reply-preview">from pyg4i import g4i</div>
+                    
+                    <div class="message-content">
+                        <div class="message-details">Так можно поменять модель AI</div>
+<span class="message-info">12:42</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">Простой бот, который озвучивает текст<br>import os<br>from gtts import gTTS<br>from pyrogram import Client, filters<br><br># Токен вашего бота и API ID/Hash<br>API_ID = &#x27;ваш_api_id&#x27;<br>API_HASH = &#x27;ваш_api_hash&#x27;<br>BOT_TOKEN = &#x27;ваш_токен_бота&#x27;<br><br>app = Client(&quot;my_bot&quot;, bot_token=BOT_TOKEN, api_id=API_ID, api_hash=API_HASH)<br><br>@app.on_message(filters.command(&quot;start&quot;))<br>def send_welcome(client, message):<br>    message.reply(&quot;Привет! Отправь мне текст, и я преобразую его в аудио!&quot;)<br><br>@app.on_message(filters.text)<br>def synthesize_text(client, message):<br>    text = message.text  # Получаем текст сообщения<br>    tts = gTTS(text=text, lang=&#x27;ru&#x27;)  # Создаем объект gTTS<br>    tts.save(f&quot;{message.from_user.id}.mp3&quot;)  # Сохраняем аудиофайл<br><br>    with open(f&quot;{message.from_user.id}.mp3&quot;, &#x27;rb&#x27;) as audio:<br>        client.send_audio(message.chat.id, audio)  # Отправляем аудиофайл<br><br>    os.remove(f&quot;{message.from_user.id}.mp3&quot;)  # Удаляем файл после отправки<br><br># Запуск бота<br>app.run()</div>
+<span class="message-info">12:59</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details"></div>
+<span class="message-info">17:23</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    <div class="reply-preview">Нет текста</div>
+                    
+                    <div class="message-content">
+                        <div class="message-details">import cv2<br>import numpy as np<br><br>state = 0  # переменная нужная для анимации смещения узора<br>w = 320  # ширина кадра<br>h = 240  # высота кадра<br>fps = 25  # кадров в секунду<br>duration = 30 * fps  # сколько длится видео в секундах<br><br># Создаем объект VideoWriter для записи видео<br>fourcc = cv2.VideoWriter_fourcc(*&#x27;mp4v&#x27;)  # Кодек для видео<br>out = cv2.VideoWriter(&#x27;output.mp4&#x27;, fourcc, fps, (w, h))<br><br># генерация кадров<br>while state &lt; duration:<br>    # Создаем пустой кадр<br>    frame = np.zeros((h, w, 3), dtype=np.uint8)<br><br>    for y in range(0, h):<br>        for x in range(0, w):<br>            # Генерация узора и заполнение кадра<br>            color_value = ((x + state) ^ y) % 256<br>            frame[y, x] = (color_value, color_value, color_value)  # Заполняем кадр в оттенках серого<br><br>    out.write(frame)  # Записываем кадр в видеофайл<br>    state += 1  # немного сдвинуть узор в следующем кадре<br><br># Освобождаем ресурсы<br>out.release()<br>cv2.destroyAllWindows()</div>
+<span class="message-info">17:24</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    <img src="downloads/photo_43.jpg" class="message-photo">
+                    <div class="message-content">
+                        <div class="message-details"></div>
+<span class="message-info">21:26</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">import matplotlib.pyplot as plt<br>import numpy as np<br><br>def draw_branch(x, y, angle, length, depth):<br>    if depth == 0:<br>        return<br>    <br>    # Вычисляем конечные координаты ветки<br>    x_end = x + length * np.cos(angle)<br>    y_end = y + length * np.sin(angle)<br>    <br>    # Рисуем линию от (x, y) до (x_end, y_end)<br>    plt.plot([x, x_end], [y, y_end], color=&#x27;brown&#x27;, lw=2)<br><br>    # Рекурсивно рисуем две новые ветви<br>    draw_branch(x_end, y_end, angle + np.pi / 6, length * 0.7, depth - 1)  # Правая ветка<br>    draw_branch(x_end, y_end, angle - np.pi / 6, length * 0.7, depth - 1)  # Левая ветка<br><br># Настройка графика<br>plt.figure(figsize=(10, 8))<br>plt.title(&quot;Фрактальное дерево&quot;)<br>plt.axis(&#x27;equal&#x27;)<br>plt.axis(&#x27;off&#x27;)  # Отключаем оси<br><br># Рисуем дерево с увеличенной длиной и глубиной<br>draw_branch(0, 0, np.pi / 2, 2, 10)  # Начинаем с основания (0,0), угол вверх (90 градусов), длина 2, глубина 5<br><br># Сохраняем график в файл<br>plt.savefig(&quot;fractal_tree.png&quot;, bbox_inches=&#x27;tight&#x27;, dpi=300)<br><br># Показать результат<br>plt.show()</div>
+<span class="message-info">21:26</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">Делаю сайт с книгами</div>
+<span class="message-info">22:22</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details"></div>
+<span class="message-info">22:23</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details"></div>
+<span class="message-info">22:23</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details"></div>
+<span class="message-info">22:23</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">import os<br>from moviepy.editor import *<br><br># Функция для генерации текстовых клипов<br>def create_text_clip(text, start_time, end_time):<br>    duration = end_time - start_time<br>    return TextClip(text, fontsize=24, color=&#x27;white&#x27;, bg_color=&#x27;black&#x27;, size=(640, 50)).set_duration(duration).set_start(start_time).set_position((&#x27;center&#x27;, &#x27;bottom&#x27;))<br><br>def create_video(mp3_file, image_file, output_file):<br>    try:<br>        # Проверка существования файлов<br>        if not os.path.exists(mp3_file):<br>            raise FileNotFoundError(f&quot;Файл {mp3_file} не найден.&quot;)<br>        if not os.path.exists(image_file):<br>            raise FileNotFoundError(f&quot;Файл {image_file} не найден.&quot;)<br><br>        # Загрузка аудиофайла<br>        audio = AudioFileClip(mp3_file)<br><br>        # Загрузка изображения<br>        image = ImageClip(image_file).set_duration(audio.duration)<br><br>        # Создание титров с временными метками<br>        subtitles = [<br>            (5, 10, &quot;Подпишись и поставь лайк!&quot;),<br>            (15, 20, &quot;И не забудь нажать на колокольчик&quot;),<br>            (25, 30, &quot;Приятного прослушивания!&quot;)<br>        ]<br><br>        # Создание текстовых клипов<br>        text_clips = [create_text_clip(text, start, end) for start, end, text in subtitles]<br><br>        # Объединение изображения и титров<br>        video = CompositeVideoClip([image] + text_clips)<br><br>        # Добавление аудио к видео<br>        video = video.set_audio(audio)<br><br>        # Сохранение финального видео<br>        video.write_videofile(output_file, fps=24)<br><br>        print(f&quot;Видео успешно создано: {output_file}&quot;)<br><br>    except Exception as e:<br>        print(f&quot;Произошла ошибка: {e}&quot;)<br><br># Пример использования<br>mp3_file = &quot;audio.mp3&quot;  # Путь к вашему MP3 файлу<br>image_file = &quot;img.jpg&quot;   # Путь к вашему изображению<br>output_file = &quot;output_video.mp4&quot;  # Путь для сохранения выходного видео<br><br>create_video(mp3_file, image_file, output_file)</div>
+<span class="message-info">19:04</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    <img src="downloads/video_frame_50.jpg" class="message-photo">
+                    <div class="message-content">
+                        <div class="message-details"></div>
+<span class="message-info">19:10</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details"><a href="https://www.youtube.com/watch?v=vsBdiFOt0N4" target="_blank">https://www.youtube.com/watch?v=vsBdiFOt0N4</a></div>
+<span class="message-info">19:24</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details"></div>
+<span class="message-info">19:25</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">Скрывайте свой след в сети и открывайте заблокированные сайты с бесплатными прокси на <a href="https://freeproxies.7nx.ru" target="_blank">https://freeproxies.7nx.ru</a></div>
+<span class="message-info">14:04</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">Написал бота который парсить новости и постит их на канале<br><a href="https://github.com/Vlad4747/TgNewsRelayBot" target="_blank">https://github.com/Vlad4747/TgNewsRelayBot</a></div>
+<span class="message-info">21:13</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">Хочу поделиться обновлениями на сайте freeproxies.7nx.ru. Я добавил несколько новых страниц:<br><br>1. О сайте - узнайте, что я из себя представляю.<br>2. Статистика - смотрите актуальные данные о работе сервиса.<br>3. API - информация о том, как использовать мой API.<br><br>Загляните, будет интересно!</div>
+<span class="message-info">17:06</span>
+                    </div>
+                    
+                    
+                </div>
+            
+                <div class="message sent">
+                    
+                    
+                    
+                    <div class="message-content">
+                        <div class="message-details">Мой сократитель ссылок:<br><a href="https://7nx.ru/" target="_blank">https://7nx.ru/</a></div>
+<span class="message-info">21:38</span>
+                    </div>
+                    
+                    <div class="reactions"><span class="reaction"><img src="imgs/emoji_7.webp_0_2.png" height="20"> 1</span></div>
+                </div>
+            
+        </div>
+        
+            <div class="input-container">
+                <div>
+                    <span class="emoji-icon">😊</span>
+                    <span class="message-placeholder">Сообщение</span>
+                    <div class="right-icons">
+                        <span>📎</span>
+                        <span>🎤</span>
+                    </div>
+                </div>
+            </div>
+        
+        
+    </div>
+</body>
+</html>
